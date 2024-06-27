@@ -15,7 +15,8 @@ datasource db {
 
 model User {
   id        String     @id @default(uuid())
-  userName  String
+  name      String
+  userName  String     @unique
   email     String     @unique
   password  String
   role      UserRole   @default(USER)
@@ -31,6 +32,7 @@ model Post {
   id        String   @id @default(uuid())
   title     String
   content   String
+  thumbnail String
   authorId  String
   published Boolean  @default(true)
   isDeleted Boolean  @default(false)
