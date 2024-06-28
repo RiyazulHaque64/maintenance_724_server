@@ -5,7 +5,7 @@ import config from "../../../config";
 import ApiError from "../../error/ApiError";
 import prisma from "../../shared/prisma";
 import { generateToken } from "../../utils/jwtHelpers";
-import { TLoginCredential } from "./Auth.interfaces";
+import { TChangePasswordPayload, TLoginCredential } from "./Auth.interfaces";
 
 const login = async (credential: TLoginCredential) => {
   const { userName, password } = credential;
@@ -43,6 +43,39 @@ const login = async (credential: TLoginCredential) => {
   };
 };
 
+const resetPassword = async (user: any, payload: TChangePasswordPayload) => {
+  const userInfo = await prisma.user.findUniqueOrThrow({
+    where: {
+      id: user?.id,
+    },
+  });
+
+  const checkPassword = await bcrypt.compare(
+    payload.oldPassword,
+    userInfo.password
+  );
+  if (!checkPassword) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Old password is invalid");
+  }
+
+  const hashedPassword = await bcrypt.hash(
+    payload.newPassword,
+    Number(config.salt_rounds)
+  );
+
+  const result = await prisma.user.update({
+    where: {
+      id: userInfo?.id,
+    },
+    data: {
+      password: hashedPassword,
+    },
+  });
+
+  return result;
+};
+
 export const AuthServices = {
   login,
+  resetPassword,
 };
