@@ -31,6 +31,5 @@ export type TFile = {
 };
 
 export type TFiles = {
-  thumbnail: TFile[];
-  touristPlaceImage?: TFile[];
+  images: TFile[];
 };

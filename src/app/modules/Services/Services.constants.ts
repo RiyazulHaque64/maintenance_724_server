@@ -1,0 +1,1 @@
+const serviceSearchableFields = ["title", "description"];

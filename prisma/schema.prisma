@@ -44,6 +44,28 @@ model Post {
   @@map("posts")
 }
 
+model Service {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  icon        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("services")
+}
+
+model Gallery {
+  id           String   @id @default(uuid())
+  image        String
+  cloudinaryId String
+  category     String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("galleries")
+}
+
 enum UserRole {
   SUPER_ADMIN
   ADMIN

@@ -11,7 +11,14 @@ cloudinary.config({
 
 const storage = multer.memoryStorage();
 
-const singleUpload = multer({ storage: storage });
+const multipleUpload = multer({ storage }).fields([
+  {
+    name: "images",
+    maxCount: 10,
+  },
+]);
+
+const singleUpload = multer({ storage });
 
 const uploadToCloudinary = async (
   file: string
@@ -30,7 +37,21 @@ const uploadToCloudinary = async (
   });
 };
 
+const deleteToCloudinary = async (publicIds: string[]) => {
+  return new Promise((resolve, reject) => {
+    cloudinary.api.delete_resources(publicIds, (error, result) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(result);
+      }
+    });
+  });
+};
+
 export const fileUploader = {
   singleUpload,
   uploadToCloudinary,
+  multipleUpload,
+  deleteToCloudinary,
 };
