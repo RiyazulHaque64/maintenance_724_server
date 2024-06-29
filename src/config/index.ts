@@ -13,4 +13,6 @@ export default {
   salt_rounds: process.env.SALT_ROUNDS,
   jwt_access_secret: process.env.JWT_ACCESS_SECRET,
   jwt_access_expiresin: process.env.JWT_ACCESS_EXPIRESIN,
+  cloudinary_api_key: process.env.CLOUDINARY_API_KEY,
+  cloudinary_api_secret: process.env.CLOUDINARY_API_SECRET,
 };

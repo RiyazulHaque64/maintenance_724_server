@@ -10,5 +10,7 @@ declare namespace NodeJS {
     SUPER_ADMIN_USER_NAME: string;
     SUPER_ADMIN_PASSWORD: string;
     SUPER_ADMIN_EMAIL: string;
+    CLOUDINARY_API_KEY: string;
+    CLOUDINARY_API_SECRET: string;
   }
 }
