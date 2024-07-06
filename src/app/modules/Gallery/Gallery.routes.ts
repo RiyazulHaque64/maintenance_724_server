@@ -22,7 +22,6 @@ router.post(
   },
   GalleryControllers.postImages
 );
-
 router.delete(
   "/",
   auth(UserRole.SUPER_ADMIN),
