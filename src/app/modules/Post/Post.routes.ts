@@ -1,5 +1,7 @@
 import { UserRole } from "@prisma/client";
 import { Router } from "express";
+import httpStatus from "http-status";
+import ApiError from "../../error/ApiError";
 import auth from "../../middlewares/auth";
 import validateRequest from "../../middlewares/validateRequest";
 import { fileUploader } from "../../utils/fileUploader";
@@ -15,6 +17,12 @@ router.post(
   auth(UserRole.SUPER_ADMIN),
   fileUploader.singleUpload.single("file"),
   (req, res, next) => {
+    if (!req.body?.data) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "Post title and content must be required"
+      );
+    }
     req.body = PostValidations.createPostValidationSchema.parse(
       JSON.parse(req.body.data)
     );
