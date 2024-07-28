@@ -10,7 +10,7 @@ import { PostValidations } from "./Post.validations";
 
 const router = Router();
 
-router.get("/", PostControllers.getPost);
+router.get("/", PostControllers.getPosts);
 router.get("/:id", PostControllers.getSinglePost);
 router.post(
   "/",

@@ -21,8 +21,8 @@ const createPost = catchAsync(
   }
 );
 
-const getPost = catchAsync(async (req, res, next) => {
-  const result = await PostServices.getPost(req.query);
+const getPosts = catchAsync(async (req, res, next) => {
+  const result = await PostServices.getPosts(req.query);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -74,7 +74,7 @@ const hardDeletePost = catchAsync(async (req, res, next) => {
 
 export const PostControllers = {
   createPost,
-  getPost,
+  getPosts,
   updatePost,
   softDeletePost,
   hardDeletePost,

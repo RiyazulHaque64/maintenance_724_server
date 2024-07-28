@@ -25,7 +25,8 @@ const createPost = async (user: any, data: Post, file: TFile | undefined) => {
   return result;
 };
 
-const getPost = async (query: Record<string, any>) => {
+const getPosts = async (query: Record<string, any>) => {
+  console.log("Inside get all post");
   const { page, limit, sortBy, sortOrder, searchTerm } = query;
   const { pageNumber, limitNumber, skip, sortWith, sortSequence } = pagination({
     page,
@@ -49,6 +50,7 @@ const getPost = async (query: Record<string, any>) => {
 
   const result = await prisma.post.findMany({
     where: {
+      isDeleted: false,
       AND: andConditions,
     },
     skip: skip,
@@ -61,7 +63,7 @@ const getPost = async (query: Record<string, any>) => {
     },
   });
 
-  const total = await prisma.post.count();
+  const total = await prisma.post.count({ where: { isDeleted: false } });
 
   return {
     meta: {
@@ -115,7 +117,7 @@ const hardDeletePost = async (id: string) => {
 
 export const PostServices = {
   createPost,
-  getPost,
+  getPosts,
   updatePost,
   softDeletePost,
   hardDeletePost,
