@@ -26,7 +26,6 @@ const createPost = async (user: any, data: Post, file: TFile | undefined) => {
 };
 
 const getPosts = async (query: Record<string, any>) => {
-  console.log("Inside get all post");
   const { page, limit, sortBy, sortOrder, searchTerm } = query;
   const { pageNumber, limitNumber, skip, sortWith, sortSequence } = pagination({
     page,
@@ -85,6 +84,7 @@ const getSinglePost = async (id: string) => {
 };
 
 const updatePost = async (id: string, data: Partial<Post>) => {
+  console.log(data);
   const result = await prisma.post.update({
     where: {
       id,

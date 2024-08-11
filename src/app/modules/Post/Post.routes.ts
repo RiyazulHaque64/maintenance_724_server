@@ -31,7 +31,7 @@ router.post(
   PostControllers.createPost
 );
 router.patch(
-  "/:id",
+  "/update/:id",
   auth(UserRole.SUPER_ADMIN),
   validateRequest(PostValidations.updatePostValidationSchema),
   PostControllers.updatePost
