@@ -33,6 +33,16 @@ router.post(
 router.patch(
   "/update/:id",
   auth(UserRole.SUPER_ADMIN),
+  fileUploader.singleUpload.single("file"),
+  (req, res, next) => {
+    if (!req.body?.data) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "No data found to update");
+    }
+    req.body = PostValidations.updatePostValidationSchema.parse(
+      JSON.parse(req.body.data)
+    );
+    next();
+  },
   validateRequest(PostValidations.updatePostValidationSchema),
   PostControllers.updatePost
 );
