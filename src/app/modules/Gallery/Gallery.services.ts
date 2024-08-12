@@ -24,7 +24,7 @@ const postImages = async (req: Request) => {
       )) as TCloudinaryResponse;
       images.push({
         image: cloudinaryResponse?.secure_url,
-        cloudinaryId: cloudinaryResponse?.public_id,
+        cloudId: cloudinaryResponse?.public_id,
         category: data.category,
       });
     }

@@ -29,17 +29,18 @@ model User {
 }
 
 model Post {
-  id        String   @id @default(uuid())
-  title     String
-  content   String
-  thumbnail String
-  authorId  String
-  published Boolean  @default(true)
-  isDeleted Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(uuid())
+  title       String
+  content     String
+  thumbnailId String   @unique
+  authorId    String
+  published   Boolean  @default(true)
+  isDeleted   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  author User @relation(fields: [authorId], references: [id])
+  author    User          @relation(fields: [authorId], references: [id])
+  thumbnail PostThumbnail @relation(fields: [thumbnailId], references: [id])
 
   @@map("posts")
 }
@@ -56,14 +57,23 @@ model Service {
 }
 
 model Gallery {
-  id           String   @id @default(uuid())
-  image        String
-  cloudinaryId String
-  category     String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id        String   @id @default(uuid())
+  image     String
+  cloudId   String
+  category  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("galleries")
+}
+
+model PostThumbnail {
+  id      String @id @default(uuid())
+  path    String
+  cloudId String
+  Post    Post?
+
+  @@map("post_thumbnails")
 }
 
 enum UserRole {

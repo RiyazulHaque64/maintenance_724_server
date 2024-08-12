@@ -43,8 +43,11 @@ const getSinglePost = catchAsync(async (req, res, next) => {
 });
 
 const updatePost = catchAsync(async (req, res, next) => {
-  console.log(req.params.id, req.body);
-  const result = await PostServices.updatePost(req.params.id, req.body);
+  const result = await PostServices.updatePost(
+    req.params.id,
+    req.body,
+    req?.file
+  );
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
