@@ -32,15 +32,15 @@ model Post {
   id          String   @id @default(uuid())
   title       String
   content     String
-  thumbnailId String   @unique
+  thumbnailId String?  @unique
   authorId    String
   published   Boolean  @default(true)
   isDeleted   Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  author    User          @relation(fields: [authorId], references: [id])
-  thumbnail PostThumbnail @relation(fields: [thumbnailId], references: [id])
+  author    User           @relation(fields: [authorId], references: [id])
+  thumbnail PostThumbnail? @relation(fields: [thumbnailId], references: [id])
 
   @@map("posts")
 }
