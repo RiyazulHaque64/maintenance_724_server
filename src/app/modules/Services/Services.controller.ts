@@ -36,7 +36,11 @@ const getSingleService = catchAsync(async (req, res, next) => {
 });
 
 const updateService = catchAsync(async (req, res, next) => {
-  const result = await ServiceServices.updateService(req.params.id, req.body);
+  const result = await ServiceServices.updateService(
+    req.params.id,
+    req.body,
+    req?.file
+  );
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,

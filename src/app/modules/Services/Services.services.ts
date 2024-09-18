@@ -75,14 +75,67 @@ const getSingleService = async (id: string) => {
   return result;
 };
 
-const updateService = async (id: string, data: Partial<Service>) => {
-  const result = await prisma.service.update({
-    where: {
-      id,
-    },
-    data: data,
-  });
-  return result;
+const updateService = async (
+  id: string,
+  data: Partial<Service>,
+  file: TFile | undefined
+) => {
+  if (file) {
+    const iconInfo: Record<string, string> = {};
+    const post = await prisma.post.findUniqueOrThrow({
+      where: {
+        id,
+      },
+      include: {
+        thumbnail: true,
+      },
+    });
+
+    const convertedFile = Buffer.from(file.buffer).toString("base64");
+    const dataURI = `data:${file.mimetype};base64,${convertedFile}`;
+    const cloudinaryResponse = await fileUploader.uploadToCloudinary(dataURI);
+    iconInfo["path"] = cloudinaryResponse?.secure_url as string;
+    iconInfo["cloudId"] = cloudinaryResponse?.public_id as string;
+
+    if (post.thumbnail) {
+      await fileUploader.deleteToCloudinary([post.thumbnail.cloudId]);
+    }
+
+    const result = await prisma.$transaction(async (transactionClient) => {
+      if (post.thumbnailId) {
+        await prisma.postThumbnail.delete({
+          where: {
+            id: post.thumbnailId,
+          },
+        });
+      }
+      const newThumbnail = await transactionClient.postThumbnail.create({
+        data: {
+          cloudId: iconInfo?.cloudId,
+          path: iconInfo?.path,
+        },
+      });
+      const updatedPost = await transactionClient.post.update({
+        where: {
+          id,
+        },
+        data: {
+          ...data,
+          thumbnailId: newThumbnail.id,
+        },
+      });
+      return updatedPost;
+    });
+    return result;
+  } else {
+    const result = await prisma.post.update({
+      where: {
+        id,
+      },
+      data: data,
+    });
+    return result;
+  }
 };
 
 const hardDeleteService = async (id: string) => {

@@ -3,7 +3,6 @@ import { Router } from "express";
 import httpStatus from "http-status";
 import ApiError from "../../error/ApiError";
 import auth from "../../middlewares/auth";
-import validateRequest from "../../middlewares/validateRequest";
 import { fileUploader } from "../../utils/fileUploader";
 import { PostControllers } from "./Post.controllers";
 import { PostValidations } from "./Post.validations";
@@ -43,7 +42,6 @@ router.patch(
     );
     next();
   },
-  validateRequest(PostValidations.updatePostValidationSchema),
   PostControllers.updatePost
 );
 router.delete(

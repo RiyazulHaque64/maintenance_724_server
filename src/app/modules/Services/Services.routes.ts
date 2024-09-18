@@ -1,7 +1,8 @@
 import { UserRole } from "@prisma/client";
 import { Router } from "express";
+import httpStatus from "http-status";
+import ApiError from "../../error/ApiError";
 import auth from "../../middlewares/auth";
-import validateRequest from "../../middlewares/validateRequest";
 import { fileUploader } from "../../utils/fileUploader";
 import { ServiceControllers } from "./Services.controller";
 import { ServiceValidations } from "./Services.validation";
@@ -23,9 +24,18 @@ router.post(
   ServiceControllers.createService
 );
 router.patch(
-  "/:id",
+  "/update/:id",
   auth(UserRole.SUPER_ADMIN),
-  validateRequest(ServiceValidations.updateServiceValidationSchema),
+  fileUploader.singleUpload.single("file"),
+  (req, res, next) => {
+    if (!req.body?.data) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "No data found to update");
+    }
+    req.body = ServiceValidations.updateServiceValidationSchema.parse(
+      JSON.parse(req.body.data)
+    );
+    next();
+  },
   ServiceControllers.updateService
 );
 router.delete(
