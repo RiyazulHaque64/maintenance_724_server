@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -39,8 +33,8 @@ model Post {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  author    User           @relation(fields: [authorId], references: [id])
-  thumbnail PostThumbnail? @relation(fields: [thumbnailId], references: [id])
+  author    User   @relation(fields: [authorId], references: [id])
+  thumbnail Image? @relation(fields: [thumbnailId], references: [id])
 
   @@map("posts")
 }
@@ -49,31 +43,36 @@ model Service {
   id          String   @id @default(uuid())
   title       String
   description String
-  icon        String
+  iconId      String   @unique
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  icon Image @relation(fields: [iconId], references: [id])
 
   @@map("services")
 }
 
 model Gallery {
   id        String   @id @default(uuid())
-  image     String
-  cloudId   String
+  imageId   String   @unique
   category  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  image Image @relation(fields: [imageId], references: [id])
+
   @@map("galleries")
 }
 
-model PostThumbnail {
-  id      String @id @default(uuid())
+model Image {
+  id      String   @id @default(uuid())
   path    String
   cloudId String
   Post    Post?
+  Service Service?
+  Gallery Gallery?
 
-  @@map("post_thumbnails")
+  @@map("images")
 }
 
 enum UserRole {

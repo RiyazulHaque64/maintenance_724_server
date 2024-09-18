@@ -8,28 +8,28 @@ import pagination from "../../utils/pagination";
 import { postSearchableTerms } from "./Post.constants";
 
 const createPost = async (user: any, data: Post, file: TFile | undefined) => {
-  const thumbnailInfo: Record<string, string> = {};
+  const image: Record<string, string> = {};
   if (file) {
     const convertedFile = Buffer.from(file.buffer).toString("base64");
     const dataURI = `data:${file.mimetype};base64,${convertedFile}`;
     const cloudinaryResponse = await fileUploader.uploadToCloudinary(dataURI);
-    thumbnailInfo["path"] = cloudinaryResponse?.secure_url as string;
-    thumbnailInfo["cloudId"] = cloudinaryResponse?.public_id as string;
+    image["path"] = cloudinaryResponse?.secure_url as string;
+    image["cloudId"] = cloudinaryResponse?.public_id as string;
   } else {
     throw new ApiError(httpStatus.BAD_REQUEST, "Post thumbnail is required");
   }
   const result = await prisma.$transaction(async (transactionClient) => {
-    const thumbnail = await transactionClient.postThumbnail.create({
+    const uploadedImage = await transactionClient.image.create({
       data: {
-        cloudId: thumbnailInfo?.cloudId,
-        path: thumbnailInfo?.path,
+        cloudId: image?.cloudId,
+        path: image?.path,
       },
     });
     const post = await transactionClient.post.create({
       data: {
         ...data,
         authorId: user.id,
-        thumbnailId: thumbnail.id,
+        thumbnailId: uploadedImage.id,
       },
     });
     return post;
@@ -102,7 +102,7 @@ const updatePost = async (
   file: TFile | undefined
 ) => {
   if (file) {
-    const thumbnailInfo: Record<string, string> = {};
+    const image: Record<string, string> = {};
     const post = await prisma.post.findUniqueOrThrow({
       where: {
         id,
@@ -115,8 +115,8 @@ const updatePost = async (
     const convertedFile = Buffer.from(file.buffer).toString("base64");
     const dataURI = `data:${file.mimetype};base64,${convertedFile}`;
     const cloudinaryResponse = await fileUploader.uploadToCloudinary(dataURI);
-    thumbnailInfo["path"] = cloudinaryResponse?.secure_url as string;
-    thumbnailInfo["cloudId"] = cloudinaryResponse?.public_id as string;
+    image["path"] = cloudinaryResponse?.secure_url as string;
+    image["cloudId"] = cloudinaryResponse?.public_id as string;
 
     if (post.thumbnail) {
       await fileUploader.deleteToCloudinary([post.thumbnail.cloudId]);
@@ -124,16 +124,16 @@ const updatePost = async (
 
     const result = await prisma.$transaction(async (transactionClient) => {
       if (post.thumbnailId) {
-        await prisma.postThumbnail.delete({
+        await prisma.image.delete({
           where: {
             id: post.thumbnailId,
           },
         });
       }
-      const newThumbnail = await transactionClient.postThumbnail.create({
+      const newImage = await transactionClient.image.create({
         data: {
-          cloudId: thumbnailInfo?.cloudId,
-          path: thumbnailInfo?.path,
+          cloudId: image?.cloudId,
+          path: image?.path,
         },
       });
       const updatedPost = await transactionClient.post.update({
@@ -142,7 +142,7 @@ const updatePost = async (
         },
         data: {
           ...data,
-          thumbnailId: newThumbnail.id,
+          thumbnailId: newImage.id,
         },
       });
       return updatedPost;

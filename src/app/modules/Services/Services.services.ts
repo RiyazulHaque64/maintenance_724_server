@@ -7,16 +7,30 @@ import { fileUploader } from "../../utils/fileUploader";
 import pagination from "../../utils/pagination";
 
 const createService = async (data: Service, file: TFile | undefined) => {
+  const image: Record<string, string> = {};
   if (file) {
     const convertedFile = Buffer.from(file.buffer).toString("base64");
     const dataURI = `data:${file.mimetype};base64,${convertedFile}`;
     const cloudinaryResponse = await fileUploader.uploadToCloudinary(dataURI);
-    data.icon = cloudinaryResponse?.secure_url as string;
+    image["path"] = cloudinaryResponse?.secure_url as string;
+    image["cloudId"] = cloudinaryResponse?.public_id as string;
   } else {
     throw new ApiError(httpStatus.BAD_REQUEST, "Service icon is required");
   }
-  const result = await prisma.service.create({
-    data: data,
+  const result = await prisma.$transaction(async (transactionClient) => {
+    const uploadedImage = await transactionClient.image.create({
+      data: {
+        cloudId: image?.cloudId,
+        path: image?.path,
+      },
+    });
+    const service = await transactionClient.service.create({
+      data: {
+        ...data,
+        iconId: uploadedImage.id,
+      },
+    });
+    return service;
   });
   return result;
 };
@@ -52,6 +66,9 @@ const getServices = async (query: Record<string, any>) => {
     orderBy: {
       [sortWith]: sortSequence,
     },
+    include: {
+      icon: true,
+    },
   });
 
   const total = await prisma.service.count();
@@ -71,6 +88,9 @@ const getSingleService = async (id: string) => {
     where: {
       id,
     },
+    include: {
+      icon: true,
+    },
   });
   return result;
 };
@@ -81,50 +101,50 @@ const updateService = async (
   file: TFile | undefined
 ) => {
   if (file) {
-    const iconInfo: Record<string, string> = {};
-    const post = await prisma.post.findUniqueOrThrow({
+    const image: Record<string, string> = {};
+    const service = await prisma.service.findUniqueOrThrow({
       where: {
         id,
       },
       include: {
-        thumbnail: true,
+        icon: true,
       },
     });
 
     const convertedFile = Buffer.from(file.buffer).toString("base64");
     const dataURI = `data:${file.mimetype};base64,${convertedFile}`;
     const cloudinaryResponse = await fileUploader.uploadToCloudinary(dataURI);
-    iconInfo["path"] = cloudinaryResponse?.secure_url as string;
-    iconInfo["cloudId"] = cloudinaryResponse?.public_id as string;
+    image["path"] = cloudinaryResponse?.secure_url as string;
+    image["cloudId"] = cloudinaryResponse?.public_id as string;
 
-    if (post.thumbnail) {
-      await fileUploader.deleteToCloudinary([post.thumbnail.cloudId]);
+    if (service.icon) {
+      await fileUploader.deleteToCloudinary([service.icon.cloudId]);
     }
 
     const result = await prisma.$transaction(async (transactionClient) => {
-      if (post.thumbnailId) {
-        await prisma.postThumbnail.delete({
+      if (service.iconId) {
+        await prisma.image.delete({
           where: {
-            id: post.thumbnailId,
+            id: service.iconId,
           },
         });
       }
-      const newThumbnail = await transactionClient.postThumbnail.create({
+      const newIcon = await transactionClient.image.create({
         data: {
-          cloudId: iconInfo?.cloudId,
-          path: iconInfo?.path,
+          cloudId: image?.cloudId,
+          path: image?.path,
         },
       });
-      const updatedPost = await transactionClient.post.update({
+      const updatedService = await transactionClient.service.update({
         where: {
           id,
         },
         data: {
           ...data,
-          thumbnailId: newThumbnail.id,
+          iconId: newIcon.id,
         },
       });
-      return updatedPost;
+      return updatedService;
     });
     return result;
   } else {
