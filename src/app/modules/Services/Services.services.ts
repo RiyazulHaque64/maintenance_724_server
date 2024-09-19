@@ -116,19 +116,11 @@ const updateService = async (
     const cloudinaryResponse = await fileUploader.uploadToCloudinary(dataURI);
     image["path"] = cloudinaryResponse?.secure_url as string;
     image["cloudId"] = cloudinaryResponse?.public_id as string;
-
     if (service.icon) {
       await fileUploader.deleteToCloudinary([service.icon.cloudId]);
     }
 
     const result = await prisma.$transaction(async (transactionClient) => {
-      if (service.iconId) {
-        await prisma.image.delete({
-          where: {
-            id: service.iconId,
-          },
-        });
-      }
       const newIcon = await transactionClient.image.create({
         data: {
           cloudId: image?.cloudId,
@@ -144,11 +136,14 @@ const updateService = async (
           iconId: newIcon.id,
         },
       });
+
+      await transactionClient.image.delete({ where: { id: service.iconId } });
+
       return updatedService;
     });
     return result;
   } else {
-    const result = await prisma.post.update({
+    const result = await prisma.service.update({
       where: {
         id,
       },
@@ -159,11 +154,34 @@ const updateService = async (
 };
 
 const hardDeleteService = async (id: string) => {
-  await prisma.service.delete({
+  const service = await prisma.service.findUniqueOrThrow({
     where: {
       id,
     },
+    include: {
+      icon: true,
+    },
   });
+  const result = await prisma.$transaction(async (transactionClient) => {
+    const deletedService = await transactionClient.service.delete({
+      where: {
+        id,
+      },
+    });
+
+    await transactionClient.image.delete({
+      where: {
+        id: service.iconId,
+      },
+    });
+
+    return deletedService;
+  });
+
+  if (result) {
+    await fileUploader.deleteToCloudinary([service.icon.cloudId]);
+  }
+
   return null;
 };
 

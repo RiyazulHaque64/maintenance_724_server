@@ -124,7 +124,7 @@ const updatePost = async (
 
     const result = await prisma.$transaction(async (transactionClient) => {
       if (post.thumbnailId) {
-        await prisma.image.delete({
+        await transactionClient.image.delete({
           where: {
             id: post.thumbnailId,
           },
