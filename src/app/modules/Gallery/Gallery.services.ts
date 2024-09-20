@@ -10,10 +10,11 @@ import pagination from "../../utils/pagination";
 const postImages = async (req: Request) => {
   const data = req.body;
   const files = req?.files as unknown as TFiles;
+  console.log({ data, files });
   if (!files?.images?.length) {
     throw new ApiError(httpStatus.BAD_REQUEST, "No images found");
   }
-  const images = [];
+  const images: Prisma.ImageCreateManyInput[] = [];
   if (files?.images) {
     for (let i = 0; i < files.images.length; i++) {
       const file = files.images[i];
@@ -23,15 +24,43 @@ const postImages = async (req: Request) => {
         dataURI
       )) as TCloudinaryResponse;
       images.push({
-        image: cloudinaryResponse?.secure_url,
+        path: cloudinaryResponse?.secure_url,
         cloudId: cloudinaryResponse?.public_id,
-        category: data.category,
       });
     }
   }
-  const result = await prisma.gallery.createMany({
-    data: images,
+
+  const result = await prisma.$transaction(async (transactionClient) => {
+    await transactionClient.image.createMany({
+      data: images,
+      skipDuplicates: true,
+    });
+
+    const insertedImages = await transactionClient.image.findMany({
+      where: {
+        cloudId: {
+          in: images.map((image) => image.cloudId),
+        },
+      },
+    });
+
+    const galleryData = insertedImages.map((image) => {
+      return {
+        imageId: image.id,
+        category: data.category,
+      };
+    });
+
+    const insertedGalleryData = await transactionClient.gallery.createMany({
+      data: galleryData,
+      skipDuplicates: true,
+    });
+
+    return {
+      totalInserted: insertedGalleryData.count,
+    };
   });
+
   return result;
 };
 
