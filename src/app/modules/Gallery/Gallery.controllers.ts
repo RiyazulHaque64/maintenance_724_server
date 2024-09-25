@@ -34,8 +34,18 @@ const getSingleImage = catchAsync(async (req, res, next) => {
   });
 });
 
+const updateImage = catchAsync(async (req, res, next) => {
+  const result = await GalleryServices.updateImage(req.params.id, req.body);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Image updated successfully",
+    data: result,
+  });
+});
+
 const hardDeleteImages = catchAsync(async (req, res, next) => {
-  const result = await GalleryServices.hardDeleteImages(req.body);
+  const result = await GalleryServices.hardDeleteImages(req.params.id);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -48,5 +58,6 @@ export const GalleryControllers = {
   postImages,
   getImages,
   getSingleImage,
+  updateImage,
   hardDeleteImages,
 };

@@ -47,19 +47,21 @@ model Service {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  icon Image @relation(fields: [iconId], references: [id])
+  icon    Image     @relation(fields: [iconId], references: [id])
+  Gallery Gallery[]
 
   @@map("services")
 }
 
 model Gallery {
-  id        String   @id @default(uuid())
-  imageId   String   @unique
-  category  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(uuid())
+  imageId    String   @unique
+  categoryId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  image Image @relation(fields: [imageId], references: [id])
+  image    Image   @relation(fields: [imageId], references: [id])
+  category Service @relation(fields: [categoryId], references: [id])
 
   @@map("galleries")
 }

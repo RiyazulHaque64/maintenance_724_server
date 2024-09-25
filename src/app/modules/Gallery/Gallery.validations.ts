@@ -1,17 +1,16 @@
 import { z } from "zod";
 
-const postImagesValidationSchema = z.object({
-  category: z.string({ required_error: "Image category is required" }),
+const addImagesValidationSchema = z.object({
+  categoryId: z.string({ required_error: "Image category is required" }),
 });
 
-const deleteImagesValidationSchema = z.object({
-  body: z.object({
-    ids: z.array(z.string()),
-    cloudinaryIds: z.array(z.string()),
-  }),
+const updateImagesValidationSchema = z.object({
+  categoryId: z
+    .string({ required_error: "Image category is required" })
+    .optional(),
 });
 
 export const GalleryValidations = {
-  postImagesValidationSchema,
-  deleteImagesValidationSchema,
+  addImagesValidationSchema,
+  updateImagesValidationSchema,
 };

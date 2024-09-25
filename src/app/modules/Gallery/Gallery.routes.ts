@@ -15,17 +15,22 @@ router.post(
   auth(UserRole.SUPER_ADMIN),
   fileUploader.multipleUpload,
   (req, res, next) => {
-    req.body = GalleryValidations.postImagesValidationSchema.parse(
+    req.body = GalleryValidations.addImagesValidationSchema.parse(
       JSON.parse(req.body.data)
     );
     next();
   },
   GalleryControllers.postImages
 );
-router.delete(
-  "/",
+router.patch(
+  "/update/:id",
   auth(UserRole.SUPER_ADMIN),
-  validateRequest(GalleryValidations.deleteImagesValidationSchema),
+  validateRequest(GalleryValidations.updateImagesValidationSchema),
+  GalleryControllers.updateImage
+);
+router.delete(
+  "/:id",
+  auth(UserRole.SUPER_ADMIN),
   GalleryControllers.hardDeleteImages
 );
 

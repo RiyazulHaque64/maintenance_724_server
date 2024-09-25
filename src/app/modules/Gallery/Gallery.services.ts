@@ -10,7 +10,6 @@ import pagination from "../../utils/pagination";
 const postImages = async (req: Request) => {
   const data = req.body;
   const files = req?.files as unknown as TFiles;
-  console.log({ data, files });
   if (!files?.images?.length) {
     throw new ApiError(httpStatus.BAD_REQUEST, "No images found");
   }
@@ -47,7 +46,7 @@ const postImages = async (req: Request) => {
     const galleryData = insertedImages.map((image) => {
       return {
         imageId: image.id,
-        category: data.category,
+        categoryId: data.categoryId,
       };
     });
 
@@ -90,6 +89,10 @@ const getImages = async (query: Record<string, any>) => {
     orderBy: {
       [sortWith]: sortSequence,
     },
+    include: {
+      image: true,
+      category: true,
+    },
   });
 
   const total = await prisma.gallery.count({
@@ -117,21 +120,50 @@ const getSingleImage = async (id: string) => {
   return result;
 };
 
-const hardDeleteImages = async (payload: any) => {
-  const { ids, cloudinaryIds } = payload;
-  if (cloudinaryIds?.length) {
-    const cloudinaryResponse = await fileUploader.deleteToCloudinary(
-      cloudinaryIds
-    );
-    console.log(cloudinaryResponse);
-  }
-  const result = await prisma.gallery.deleteMany({
+const updateImage = async (id: string, data: { categoryId: string }) => {
+  const category = await prisma.gallery.findUniqueOrThrow({
+    where: { id: data.categoryId },
+  });
+  const result = await prisma.gallery.update({
     where: {
-      id: {
-        in: ids,
-      },
+      id,
+    },
+    data: {
+      categoryId: category.id,
     },
   });
+  return result;
+};
+
+const hardDeleteImages = async (id: string) => {
+  console.log(id);
+  const galleryItem = await prisma.gallery.findUniqueOrThrow({
+    where: {
+      id,
+    },
+    include: {
+      image: true,
+    },
+  });
+  const result = await prisma.$transaction(async (transactionClient) => {
+    const deletedGalleryItem = await transactionClient.gallery.delete({
+      where: {
+        id,
+      },
+    });
+    await transactionClient.image.delete({
+      where: {
+        id: galleryItem.image.id,
+      },
+    });
+    return deletedGalleryItem;
+  });
+
+  const cloudId = galleryItem?.image?.cloudId;
+  if (cloudId) {
+    await fileUploader.deleteToCloudinary([cloudId]);
+  }
+
   return result;
 };
 
@@ -139,5 +171,6 @@ export const GalleryServices = {
   postImages,
   getImages,
   getSingleImage,
+  updateImage,
   hardDeleteImages,
 };
