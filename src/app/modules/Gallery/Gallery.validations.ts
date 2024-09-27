@@ -1,13 +1,11 @@
 import { z } from "zod";
 
 const addImagesValidationSchema = z.object({
-  categoryId: z.string({ required_error: "Image category is required" }),
+  serviceId: z.string({ required_error: "Service is required" }),
 });
 
 const updateImagesValidationSchema = z.object({
-  categoryId: z
-    .string({ required_error: "Image category is required" })
-    .optional(),
+  serviceId: z.string({ required_error: "Service is required" }).optional(),
 });
 
 export const GalleryValidations = {

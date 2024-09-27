@@ -54,14 +54,14 @@ model Service {
 }
 
 model Gallery {
-  id         String   @id @default(uuid())
-  imageId    String   @unique
-  categoryId String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id        String   @id @default(uuid())
+  imageId   String   @unique
+  serviceId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  image    Image   @relation(fields: [imageId], references: [id])
-  category Service @relation(fields: [categoryId], references: [id])
+  image   Image   @relation(fields: [imageId], references: [id])
+  service Service @relation(fields: [serviceId], references: [id])
 
   @@map("galleries")
 }

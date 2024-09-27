@@ -46,7 +46,7 @@ const postImages = async (req: Request) => {
     const galleryData = insertedImages.map((image) => {
       return {
         imageId: image.id,
-        categoryId: data.categoryId,
+        serviceId: data.serviceId,
       };
     });
 
@@ -64,7 +64,7 @@ const postImages = async (req: Request) => {
 };
 
 const getImages = async (query: Record<string, any>) => {
-  const { page, limit, sortBy, sortOrder, category } = query;
+  const { page, limit, sortBy, sortOrder, service } = query;
   const { pageNumber, limitNumber, skip, sortWith, sortSequence } = pagination({
     page,
     limit,
@@ -74,9 +74,9 @@ const getImages = async (query: Record<string, any>) => {
 
   const andConditions: Prisma.GalleryWhereInput[] = [];
 
-  if (category) {
+  if (service) {
     andConditions.push({
-      category: category,
+      service: service,
     });
   }
 
@@ -91,7 +91,7 @@ const getImages = async (query: Record<string, any>) => {
     },
     include: {
       image: true,
-      category: true,
+      service: true,
     },
   });
 
@@ -120,16 +120,16 @@ const getSingleImage = async (id: string) => {
   return result;
 };
 
-const updateImage = async (id: string, data: { categoryId: string }) => {
-  const category = await prisma.gallery.findUniqueOrThrow({
-    where: { id: data.categoryId },
+const updateImage = async (id: string, data: { serviceId: string }) => {
+  const service = await prisma.service.findUniqueOrThrow({
+    where: { id: data.serviceId },
   });
   const result = await prisma.gallery.update({
     where: {
       id,
     },
     data: {
-      categoryId: category.id,
+      serviceId: service.id,
     },
   });
   return result;
