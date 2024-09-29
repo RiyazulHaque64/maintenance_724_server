@@ -5,7 +5,9 @@ const addImagesValidationSchema = z.object({
 });
 
 const updateImagesValidationSchema = z.object({
-  serviceId: z.string({ required_error: "Service is required" }).optional(),
+  body: z.object({
+    serviceId: z.string({ required_error: "Service is required" }).optional(),
+  }),
 });
 
 export const GalleryValidations = {

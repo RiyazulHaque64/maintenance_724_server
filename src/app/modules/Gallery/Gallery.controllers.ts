@@ -35,6 +35,7 @@ const getSingleImage = catchAsync(async (req, res, next) => {
 });
 
 const updateImage = catchAsync(async (req, res, next) => {
+  console.log(req.body, req.params.id);
   const result = await GalleryServices.updateImage(req.params.id, req.body);
   sendResponse(res, {
     statusCode: httpStatus.OK,
